@@ -6,9 +6,8 @@
   <title>Mappa Spiagge Creta</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     :root, [data-theme="light"] {
       --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
@@ -62,7 +61,9 @@
     .legend-grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: var(--space-2) var(--space-3); }
     .legend-item { display:flex; align-items:center; gap: var(--space-2); font-size: var(--text-sm); }
     .dot { width: 0.9rem; height: 0.9rem; border-radius: 50%; flex: 0 0 auto; }
-    .dot.beach { background: #1ea7a8; } .dot.home { background: #dc5f45; } .dot.airport { background: #5b77d1; }
+    .dot.beach { background: #1ea7a8; }
+    .dot.home { background: #dc5f45; }
+    .dot.airport { background: #5b77d1; }
     .overlay { position:absolute; inset: auto clamp(var(--space-4), 3vw, var(--space-8)) clamp(var(--space-4), 3vw, var(--space-8)) auto; z-index: 900; width: min(420px, calc(100% - 2rem)); padding: var(--space-5); border-radius: var(--radius-xl); border: 1px solid color-mix(in srgb, var(--color-primary) 20%, var(--color-border)); background: color-mix(in srgb, var(--color-surface) 85%, transparent); backdrop-filter: blur(24px) saturate(1.1); box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(10px) scale(0.985); pointer-events: none; transition: opacity var(--transition), transform var(--transition); }
     .overlay.active { opacity: 1; transform: translateY(0) scale(1); pointer-events:auto; }
     .overlay .eyebrow { display:inline-flex; align-items:center; gap: var(--space-2); padding: 0.28rem 0.7rem; border-radius: var(--radius-full); background: var(--color-primary-soft); color: var(--color-primary); font-size: var(--text-xs); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; margin-bottom: var(--space-2); }
@@ -85,18 +86,11 @@
     }
   </style>
 </head>
-
 <body>
   <div class="app">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-mark" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20V6.5Z"></path>
-            <path d="M9 4v13.5"></path>
-            <path d="M15 6.5V20"></path>
-          </svg>
-        </div>
+        <div class="brand-mark">🏖️</div>
         <div class="brand-copy">
           <h1>Creta beach map</h1>
           <p>Le spiagge piu belle, la casa a Hersonissos e i due aeroporti principali.</p>
@@ -143,10 +137,147 @@
         <h3>Tocca una spiaggia</h3>
         <p>La scheda mostrera foto, rating e info pratiche della spiaggia selezionata.</p>
         <div class="stats">
-          <span class="chip">Rating: --</span>
-          <span class="chip">Costa: --</span>
+          <div class="chip"><span class="chip-label">Rating:</span> --</div>
+          <div class="chip"><span class="chip-label">Costa:</span> --</div>
         </div>
       </section>
     </main>
   </div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Initialize map
+    const map = L.map('map').setView([35.2401, 25.1263], 9);
+    
+    // Add tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(map);
+
+    // Sample beach data (replace with real data)
+    const beaches = [
+      { name: 'Balos Beach', lat: 35.5922, lng: 23.5872, zone: 'ovest', type: 'wild', rating: 5, coast: 'Nord-ovest' },
+      { name: 'Elafonisi Beach', lat: 35.2709, lng: 23.5414, zone: 'ovest', type: 'organised', rating: 5, coast: 'Sud-ovest' },
+      { name: 'Preveli Beach', lat: 35.1558, lng: 24.4767, zone: 'sud', type: 'wild', rating: 4.5, coast: 'Sud' },
+      { name: 'Matala Beach', lat: 34.9942, lng: 24.7492, zone: 'sud', type: 'organised', rating: 4, coast: 'Sud' },
+      { name: 'Vai Beach', lat: 35.2667, lng: 26.2531, zone: 'nord-est', type: 'organised', rating: 4.5, coast: 'Nord-est' },
+      { name: 'Agiofarago Beach', lat: 35.0056, lng: 24.7917, zone: 'sud', type: 'wild', rating: 4.5, coast: 'Sud' }
+    ];
+
+    const home = { name: 'Casa a Hersonissos', lat: 35.3167, lng: 25.3953 };
+    const airports = [
+      { name: 'Aeroporto Heraklion', lat: 35.3397, lng: 25.1803 },
+      { name: 'Aeroporto Chania', lat: 35.5317, lng: 24.1497 }
+    ];
+
+    let markers = [];
+    let activeMarker = null;
+
+    // Create markers
+    function createMarkers() {
+      // Clear existing markers
+      markers.forEach(m => m.remove());
+      markers = [];
+
+      // Add beaches
+      beaches.forEach(beach => {
+        const icon = L.divIcon({
+          className: 'custom-marker beach',
+          iconSize: [18, 18]
+        });
+        const marker = L.marker([beach.lat, beach.lng], { icon })
+          .addTo(map)
+          .on('click', () => showBeachInfo(beach, marker));
+        marker.data = beach;
+        markers.push(marker);
+      });
+
+      // Add home
+      const homeIcon = L.divIcon({
+        className: 'custom-marker home',
+        iconSize: [20, 20]
+      });
+      L.marker([home.lat, home.lng], { icon: homeIcon })
+        .addTo(map)
+        .bindPopup(home.name);
+
+      // Add airports
+      airports.forEach(airport => {
+        const icon = L.divIcon({
+          className: 'custom-marker airport',
+          iconSize: [18, 18]
+        });
+        L.marker([airport.lat, airport.lng], { icon })
+          .addTo(map)
+          .bindPopup(airport.name);
+      });
+    }
+
+    function showBeachInfo(beach, marker) {
+      const overlay = document.getElementById('beachOverlay');
+      overlay.querySelector('h3').textContent = beach.name;
+      overlay.querySelector('p').textContent = `Una delle spiagge piu belle della zona ${beach.zone}.`;
+      overlay.querySelectorAll('.chip')[0].innerHTML = `<span class="chip-label">Rating:</span> ${beach.rating}/5`;
+      overlay.querySelectorAll('.chip')[1].innerHTML = `<span class="chip-label">Costa:</span> ${beach.coast}`;
+      overlay.classList.add('active');
+
+      if (activeMarker) {
+        activeMarker.getElement().classList.remove('is-active');
+      }
+      marker.getElement().classList.add('is-active');
+      activeMarker = marker;
+    }
+
+    // Filters
+    let currentZone = 'all';
+    let currentType = 'all';
+
+    function applyFilters() {
+      markers.forEach(marker => {
+        if (!marker.data) return;
+        const beach = marker.data;
+        const zoneMatch = currentZone === 'all' || beach.zone === currentZone;
+        const typeMatch = currentType === 'all' || beach.type === currentType;
+        
+        if (zoneMatch && typeMatch) {
+          marker.addTo(map);
+        } else {
+          marker.remove();
+        }
+      });
+    }
+
+    // Zone filters
+    document.querySelectorAll('#zoneFilters .filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#zoneFilters .filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentZone = btn.dataset.zone;
+        applyFilters();
+      });
+    });
+
+    // Type filters
+    document.querySelectorAll('#typeToggle button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#typeToggle button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentType = btn.dataset.type;
+        applyFilters();
+      });
+    });
+
+    // Theme toggle
+    document.querySelector('[data-theme-toggle]').addEventListener('click', () => {
+      const html = document.documentElement;
+      const currentTheme = html.getAttribute('data-theme') || 'light';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      html.setAttribute('data-theme', newTheme);
+    });
+
+    // Initialize
+    createMarkers();
+  </script>
+</body>
+</html>
