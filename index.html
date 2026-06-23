@@ -64,6 +64,7 @@
     .dot.beach { background: #1ea7a8; }
     .dot.home { background: #dc5f45; }
     .dot.airport { background: #5b77d1; }
+    .dot.monument { background: #e5a855; }
     .overlay { position:absolute; inset: auto clamp(var(--space-4), 3vw, var(--space-8)) clamp(var(--space-4), 3vw, var(--space-8)) auto; z-index: 900; width: min(420px, calc(100% - 2rem)); padding: var(--space-5); border-radius: var(--radius-xl); border: 1px solid color-mix(in srgb, var(--color-primary) 20%, var(--color-border)); background: color-mix(in srgb, var(--color-surface) 85%, transparent); backdrop-filter: blur(24px) saturate(1.1); box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(10px) scale(0.985); pointer-events: none; transition: opacity var(--transition), transform var(--transition); }
     .overlay.active { opacity: 1; transform: translateY(0) scale(1); pointer-events:auto; }
     .overlay .eyebrow { display:inline-flex; align-items:center; gap: var(--space-2); padding: 0.28rem 0.7rem; border-radius: var(--radius-full); background: var(--color-primary-soft); color: var(--color-primary); font-size: var(--text-xs); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; margin-bottom: var(--space-2); }
@@ -82,6 +83,7 @@
     .custom-marker.beach { background: #18a7a4; }
     .custom-marker.home { background: #dd6849; width: 20px; height: 20px; }
     .custom-marker.airport { background: #5371cf; }
+    .custom-marker.monument { background: #e5a855; }
     .leaflet-marker-icon.is-active { transform: scale(1.22); filter: drop-shadow(0 8px 20px rgba(0,0,0,0.28)); }
     @media (max-width: 820px) {
       #map { height: calc(100dvh - 118px); }
@@ -99,7 +101,7 @@
         <div class="brand-mark">🏖️</div>
         <div class="brand-copy">
           <h1>Creta beach map</h1>
-          <p>Le spiagge piu belle, la casa a Hersonissos e i due aeroporti principali.</p>
+          <p>Spiagge, monumenti, casa e aeroporti principali.</p>
         </div>
       </div>
       <div class="actions">
@@ -130,21 +132,21 @@
       <div id="map" aria-label="Mappa interattiva di Creta"></div>
       <aside class="legend">
         <h2>Come usare la mappa</h2>
-        <p>Filtra per zona e tipo, poi tocca un punto turchese per aprire la scheda con foto, rating e dettagli pratici.</p>
+        <p>Filtra per zona e tipo, poi tocca un punto per aprire la scheda con info e dettagli.</p>
         <div class="legend-grid">
-          <div class="legend-item"><span class="dot beach"></span> Spiagge consigliate</div>
-          <div class="legend-item"><span class="dot home"></span> Casa a Hersonissos</div>
-          <div class="legend-item"><span class="dot airport"></span> Aeroporto di Heraklion</div>
-          <div class="legend-item"><span class="dot airport"></span> Aeroporto di Chania</div>
+          <div class="legend-item"><span class="dot beach"></span> Spiagge</div>
+          <div class="legend-item"><span class="dot monument"></span> Monumenti</div>
+          <div class="legend-item"><span class="dot home"></span> Casa</div>
+          <div class="legend-item"><span class="dot airport"></span> Aeroporti</div>
         </div>
       </aside>
       <section class="overlay" id="beachOverlay" aria-live="polite">
-        <div class="eyebrow">Spiaggia</div>
-        <h3>Tocca una spiaggia</h3>
-        <p>La scheda mostrera foto, rating e info pratiche della spiaggia selezionata.</p>
+        <div class="eyebrow">Punto d'interesse</div>
+        <h3>Seleziona un punto</h3>
+        <p>La scheda mostrera info, descrizione e dettagli del luogo selezionato.</p>
         <div class="stats">
-          <div class="chip"><span class="chip-label">Rating:</span> --</div>
-          <div class="chip"><span class="chip-label">Costa:</span> --</div>
+          <div class="chip"><span class="chip-label">Tipo:</span> --</div>
+          <div class="chip"><span class="chip-label">Info:</span> --</div>
         </div>
         <div class="action-buttons">
           <a href="#" class="btn btn-primary" id="viewImagesBtn" target="_blank" rel="noopener">
@@ -171,14 +173,24 @@
       maxZoom: 19
     }).addTo(map);
 
-    // Sample beach data (replace with real data)
+    // Beach data
     const beaches = [
-      { name: 'Balos Beach', lat: 35.5922, lng: 23.5872, zone: 'ovest', type: 'wild', rating: 5, coast: 'Nord-ovest', images: 'https://www.google.com/search?q=Balos+Beach+Crete&tbm=isch' },
-      { name: 'Elafonisi Beach', lat: 35.2709, lng: 23.5414, zone: 'ovest', type: 'organised', rating: 5, coast: 'Sud-ovest', images: 'https://www.google.com/search?q=Elafonisi+Beach+Crete&tbm=isch' },
-      { name: 'Preveli Beach', lat: 35.1558, lng: 24.4767, zone: 'sud', type: 'wild', rating: 4.5, coast: 'Sud', images: 'https://www.google.com/search?q=Preveli+Beach+Crete&tbm=isch' },
-      { name: 'Matala Beach', lat: 34.9942, lng: 24.7492, zone: 'sud', type: 'organised', rating: 4, coast: 'Sud', images: 'https://www.google.com/search?q=Matala+Beach+Crete&tbm=isch' },
-      { name: 'Vai Beach', lat: 35.2667, lng: 26.2531, zone: 'nord-est', type: 'organised', rating: 4.5, coast: 'Nord-est', images: 'https://www.google.com/search?q=Vai+Beach+Crete&tbm=isch' },
-      { name: 'Agiofarago Beach', lat: 35.0056, lng: 24.7917, zone: 'sud', type: 'wild', rating: 4.5, coast: 'Sud', images: 'https://www.google.com/search?q=Agiofarago+Beach+Crete&tbm=isch' }
+      { name: 'Balos Beach', lat: 35.5922, lng: 23.5872, zone: 'ovest', type: 'wild', rating: 5, coast: 'Nord-ovest', images: 'https://www.google.com/search?q=Balos+Beach+Crete&tbm=isch', description: 'Spiaggia paradisiaca con laguna turchese e sabbia bianca' },
+      { name: 'Elafonisi Beach', lat: 35.2709, lng: 23.5414, zone: 'ovest', type: 'organised', rating: 5, coast: 'Sud-ovest', images: 'https://www.google.com/search?q=Elafonisi+Beach+Crete&tbm=isch', description: 'Famosa per la sua sabbia rosa e acque cristalline' },
+      { name: 'Preveli Beach', lat: 35.1558, lng: 24.4767, zone: 'sud', type: 'wild', rating: 4.5, coast: 'Sud', images: 'https://www.google.com/search?q=Preveli+Beach+Crete&tbm=isch', description: 'Spiaggia con palmeto e fiume che sfocia in mare' },
+      { name: 'Matala Beach', lat: 34.9942, lng: 24.7492, zone: 'sud', type: 'organised', rating: 4, coast: 'Sud', images: 'https://www.google.com/search?q=Matala+Beach+Crete&tbm=isch', description: 'Spiaggia con grotte storiche e atmosfera hippie' },
+      { name: 'Vai Beach', lat: 35.2667, lng: 26.2531, zone: 'nord-est', type: 'organised', rating: 4.5, coast: 'Nord-est', images: 'https://www.google.com/search?q=Vai+Beach+Crete&tbm=isch', description: 'Unica foresta di palme naturale in Europa' },
+      { name: 'Agiofarago Beach', lat: 35.0056, lng: 24.7917, zone: 'sud', type: 'wild', rating: 4.5, coast: 'Sud', images: 'https://www.google.com/search?q=Agiofarago+Beach+Crete&tbm=isch', description: 'Gola selvaggia con piccola spiaggia isolata' }
+    ];
+
+    // Monuments data
+    const monuments = [
+      { name: 'Palazzo di Cnosso', lat: 35.2979, lng: 25.1632, description: 'Il piu grande sito archeologico dell\'eta del bronzo a Creta, leggendario palazzo del re Minosse', images: 'https://www.google.com/search?q=Knossos+Palace+Crete&tbm=isch', info: 'Archeologico' },
+      { name: 'Fortezza di Rethymno', lat: 35.3678, lng: 24.4739, description: 'Imponente fortezza veneziana del XVI secolo che domina la citta di Rethymno', images: 'https://www.google.com/search?q=Fortezza+Rethymno+Crete&tbm=isch', info: 'Storico' },
+      { name: 'Monastero di Arkadi', lat: 35.3097, lng: 24.6297, description: 'Monastero storico simbolo della resistenza cretese contro gli ottomani', images: 'https://www.google.com/search?q=Arkadi+Monastery+Crete&tbm=isch', info: 'Religioso' },
+      { name: 'Palazzo di Festo', lat: 35.0518, lng: 24.8145, description: 'Secondo sito minoico piu importante dopo Cnosso, con vista sulla pianura di Messara', images: 'https://www.google.com/search?q=Phaistos+Palace+Crete&tbm=isch', info: 'Archeologico' },
+      { name: 'Gola di Samaria', lat: 35.2620, lng: 23.9620, description: 'La gola piu lunga d\'Europa, parco nazionale con paesaggi mozzafiato', images: 'https://www.google.com/search?q=Samaria+Gorge+Crete&tbm=isch', info: 'Naturale' },
+      { name: 'Spinalonga', lat: 35.2983, lng: 25.7403, description: 'Isola fortezza con storia affascinante, ex colonia di lebbrosi', images: 'https://www.google.com/search?q=Spinalonga+Island+Crete&tbm=isch', info: 'Storico' }
     ];
 
     const home = { 
@@ -210,8 +222,22 @@
         });
         const marker = L.marker([beach.lat, beach.lng], { icon })
           .addTo(map)
-          .on('click', () => showBeachInfo(beach, marker));
+          .on('click', () => showPointInfo(beach, marker, 'beach'));
         marker.data = beach;
+        markers.push(marker);
+      });
+
+      // Add monuments
+      monuments.forEach(monument => {
+        const icon = L.divIcon({
+          className: 'custom-marker monument',
+          iconSize: [18, 18]
+        });
+        const marker = L.marker([monument.lat, monument.lng], { icon })
+          .addTo(map)
+          .on('click', () => showPointInfo(monument, marker, 'monument'));
+        marker.data = monument;
+        marker.type = 'monument';
         markers.push(marker);
       });
 
@@ -236,20 +262,51 @@
       });
     }
 
-    function showBeachInfo(beach, marker) {
+    function showPointInfo(point, marker, pointType) {
       const overlay = document.getElementById('beachOverlay');
-      overlay.querySelector('h3').textContent = beach.name;
-      overlay.querySelector('p').textContent = `Una delle spiagge piu belle della zona ${beach.zone}.`;
-      overlay.querySelectorAll('.chip')[0].innerHTML = `<span class="chip-label">Rating:</span> ${beach.rating}/5`;
-      overlay.querySelectorAll('.chip')[1].innerHTML = `<span class="chip-label">Costa:</span> ${beach.coast}`;
+      const eyebrow = overlay.querySelector('.eyebrow');
+      
+      // Update eyebrow
+      eyebrow.textContent = pointType === 'beach' ? 'Spiaggia' : 'Monumento';
+      
+      // Update content
+      overlay.querySelector('h3').textContent = point.name;
+      overlay.querySelector('p').textContent = point.description;
+      
+      // Update chips
+      if (pointType === 'beach') {
+        overlay.querySelectorAll('.chip')[0].innerHTML = `<span class="chip-label">Rating:</span> ${point.rating}/5`;
+        overlay.querySelectorAll('.chip')[1].innerHTML = `<span class="chip-label">Costa:</span> ${point.coast}`;
+      } else {
+        overlay.querySelectorAll('.chip')[0].innerHTML = `<span class="chip-label">Tipo:</span> ${point.info}`;
+        overlay.querySelectorAll('.chip')[1].innerHTML = `<span class="chip-label">Categoria:</span> Monumento`;
+      }
       
       // Update image button
       const imagesBtn = document.getElementById('viewImagesBtn');
-      imagesBtn.href = beach.images;
+      imagesBtn.href = point.images;
       
-      // Update directions button (Google Maps with directions from home)
+      // Update directions button with user's current location
       const directionsBtn = document.getElementById('directionsBtn');
-      directionsBtn.href = `https://www.google.com/maps/dir/${home.lat},${home.lng}/${beach.lat},${beach.lng}`;
+      directionsBtn.onclick = (e) => {
+        e.preventDefault();
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const userLat = position.coords.latitude;
+              const userLng = position.coords.longitude;
+              window.open(`https://www.google.com/maps/dir/${userLat},${userLng}/${point.lat},${point.lng}`, '_blank');
+            },
+            () => {
+              // Fallback to home location if geolocation fails
+              window.open(`https://www.google.com/maps/dir/${home.lat},${home.lng}/${point.lat},${point.lng}`, '_blank');
+            }
+          );
+        } else {
+          // Fallback if geolocation is not supported
+          window.open(`https://www.google.com/maps/dir/${home.lat},${home.lng}/${point.lat},${point.lng}`, '_blank');
+        }
+      };
       
       overlay.classList.add('active');
 
@@ -267,6 +324,14 @@
     function applyFilters() {
       markers.forEach(marker => {
         if (!marker.data) return;
+        
+        // Monuments are always shown (no zone/type filter)
+        if (marker.type === 'monument') {
+          marker.addTo(map);
+          return;
+        }
+        
+        // Filter beaches
         const beach = marker.data;
         const zoneMatch = currentZone === 'all' || beach.zone === currentZone;
         const typeMatch = currentType === 'all' || beach.type === currentType;
