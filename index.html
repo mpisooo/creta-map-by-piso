@@ -65,7 +65,7 @@
     .dot.home { background: #dc5f45; }
     .dot.airport { background: #5b77d1; }
     .dot.monument { background: #e5a855; }
-    .overlay { position:absolute; inset: auto clamp(var(--space-4), 3vw, var(--space-8)) clamp(var(--space-4), 3vw, var(--space-8)) auto; z-index: 900; width: min(420px, calc(100% - 2rem)); padding: var(--space-5); border-radius: var(--radius-xl); border: 1px solid color-mix(in srgb, var(--color-primary) 20%, var(--color-border)); background: color-mix(in srgb, var(--color-surface) 85%, transparent); backdrop-filter: blur(24px) saturate(1.1); box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(10px) scale(0.985); pointer-events: none; transition: opacity var(--transition), transform var(--transition); }
+    .overlay { position:absolute; inset: auto clamp(var(--space-4), 3vw, var(--space-8)) clamp(var(--space-4), 3vw, var(--space-8)) auto; z-index: 900; width: min(450px, calc(100% - 2rem)); padding: var(--space-5); border-radius: var(--radius-xl); border: 1px solid color-mix(in srgb, var(--color-primary) 20%, var(--color-border)); background: color-mix(in srgb, var(--color-surface) 85%, transparent); backdrop-filter: blur(24px) saturate(1.1); box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(10px) scale(0.985); pointer-events: none; transition: opacity var(--transition), transform var(--transition); }
     .overlay.active { opacity: 1; transform: translateY(0) scale(1); pointer-events:auto; }
     .overlay .eyebrow { display:inline-flex; align-items:center; gap: var(--space-2); padding: 0.28rem 0.7rem; border-radius: var(--radius-full); background: var(--color-primary-soft); color: var(--color-primary); font-size: var(--text-xs); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; margin-bottom: var(--space-2); }
     .overlay h3 { font-size: var(--text-xl); margin: 0 0 var(--space-2); font-family: var(--font-display); line-height: 1; }
@@ -73,11 +73,15 @@
     .stats { display:flex; flex-wrap:wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
     .chip { padding: 0.55rem 0.8rem; border-radius: var(--radius-full); border: 1px solid var(--color-border); background: color-mix(in srgb, var(--color-surface-2) 88%, transparent); font-size: var(--text-sm); }
     .chip-label { font-weight: 600; margin-right: 0.25rem; }
-    .action-buttons { display: flex; gap: var(--space-2); }
+    .weather-badge { display: flex; align-items: center; gap: var(--space-2); padding: 0.6rem 1rem; border-radius: var(--radius-xl); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: var(--text-sm); font-weight: 500; margin-bottom: var(--space-3); }
+    .weather-icon { font-size: 1.5rem; }
+    .action-buttons { display: flex; gap: var(--space-2); flex-wrap: wrap; }
     .btn { padding: 0.6rem 1.2rem; border-radius: var(--radius-full); border: 1px solid var(--color-border); background: var(--color-surface-2); color: var(--color-text); font-size: var(--text-sm); font-weight: 500; cursor: pointer; transition: all var(--transition); display: inline-flex; align-items: center; gap: var(--space-2); text-decoration: none; }
     .btn:hover { background: var(--color-primary); color: white; border-color: var(--color-primary); transform: translateY(-2px); box-shadow: var(--shadow-md); }
     .btn-primary { background: var(--color-primary); color: white; border-color: var(--color-primary); }
     .btn-primary:hover { background: var(--color-primary-hover); }
+    .btn-share { background: #25D366; color: white; border-color: #25D366; }
+    .btn-share:hover { background: #1da851; border-color: #1da851; }
     .leaflet-control-zoom { border: 1px solid var(--color-border) !important; box-shadow: var(--shadow-md) !important; overflow:hidden; border-radius: 14px !important; }
     .custom-marker { width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.92); box-shadow: 0 6px 18px rgba(0,0,0,0.18); }
     .custom-marker.beach { background: #18a7a4; }
@@ -123,6 +127,16 @@
             <button data-type="wild">Wild</button>
           </div>
         </div>
+        <div class="filter-group">
+          <label>Monumenti</label>
+          <div class="pill-toggle" id="monumentToggle">
+            <button data-monument="all" class="active">Tutti</button>
+            <button data-monument="archeologico">Archeol.</button>
+            <button data-monument="storico">Storici</button>
+            <button data-monument="religioso">Relig.</button>
+            <button data-monument="naturale">Natural.</button>
+          </div>
+        </div>
         <button class="icon-btn" type="button" data-theme-toggle aria-label="Passa al tema scuro">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
         </button>
@@ -143,10 +157,15 @@
       <section class="overlay" id="beachOverlay" aria-live="polite">
         <div class="eyebrow">Punto d'interesse</div>
         <h3>Seleziona un punto</h3>
+        <div id="weatherInfo" class="weather-badge" style="display:none;">
+          <span class="weather-icon"></span>
+          <span class="weather-text">Caricamento meteo...</span>
+        </div>
         <p>La scheda mostrera info, descrizione e dettagli del luogo selezionato.</p>
         <div class="stats">
           <div class="chip"><span class="chip-label">Tipo:</span> --</div>
           <div class="chip"><span class="chip-label">Info:</span> --</div>
+          <div class="chip" id="distanceChip" style="display:none;"><span class="chip-label">Distanza:</span> --</div>
         </div>
         <div class="action-buttons">
           <a href="#" class="btn btn-primary" id="viewImagesBtn" target="_blank" rel="noopener">
@@ -157,6 +176,10 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"></path><circle cx="12" cy="10" r="3"></circle></svg>
             Indicazioni
           </a>
+          <button class="btn btn-share" id="shareBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
+            Condividi
+          </button>
         </div>
       </section>
     </main>
@@ -164,16 +187,13 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // Initialize map
     const map = L.map('map').setView([35.2401, 25.1263], 9);
     
-    // Add tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors',
       maxZoom: 19
     }).addTo(map);
 
-    // Beach data
     const beaches = [
       { name: 'Balos Beach', lat: 35.5922, lng: 23.5872, zone: 'ovest', type: 'wild', rating: 5, coast: 'Nord-ovest', images: 'https://www.google.com/search?q=Balos+Beach+Crete&tbm=isch', description: 'Spiaggia paradisiaca con laguna turchese e sabbia bianca' },
       { name: 'Elafonisi Beach', lat: 35.2709, lng: 23.5414, zone: 'ovest', type: 'organised', rating: 5, coast: 'Sud-ovest', images: 'https://www.google.com/search?q=Elafonisi+Beach+Crete&tbm=isch', description: 'Famosa per la sua sabbia rosa e acque cristalline' },
@@ -183,23 +203,16 @@
       { name: 'Agiofarago Beach', lat: 35.0056, lng: 24.7917, zone: 'sud', type: 'wild', rating: 4.5, coast: 'Sud', images: 'https://www.google.com/search?q=Agiofarago+Beach+Crete&tbm=isch', description: 'Gola selvaggia con piccola spiaggia isolata' }
     ];
 
-    // Monuments data
     const monuments = [
-      { name: 'Palazzo di Cnosso', lat: 35.2979, lng: 25.1632, description: 'Il piu grande sito archeologico dell\'eta del bronzo a Creta, leggendario palazzo del re Minosse', images: 'https://www.google.com/search?q=Knossos+Palace+Crete&tbm=isch', info: 'Archeologico' },
-      { name: 'Fortezza di Rethymno', lat: 35.3678, lng: 24.4739, description: 'Imponente fortezza veneziana del XVI secolo che domina la citta di Rethymno', images: 'https://www.google.com/search?q=Fortezza+Rethymno+Crete&tbm=isch', info: 'Storico' },
-      { name: 'Monastero di Arkadi', lat: 35.3097, lng: 24.6297, description: 'Monastero storico simbolo della resistenza cretese contro gli ottomani', images: 'https://www.google.com/search?q=Arkadi+Monastery+Crete&tbm=isch', info: 'Religioso' },
-      { name: 'Palazzo di Festo', lat: 35.0518, lng: 24.8145, description: 'Secondo sito minoico piu importante dopo Cnosso, con vista sulla pianura di Messara', images: 'https://www.google.com/search?q=Phaistos+Palace+Crete&tbm=isch', info: 'Archeologico' },
-      { name: 'Gola di Samaria', lat: 35.2620, lng: 23.9620, description: 'La gola piu lunga d\'Europa, parco nazionale con paesaggi mozzafiato', images: 'https://www.google.com/search?q=Samaria+Gorge+Crete&tbm=isch', info: 'Naturale' },
-      { name: 'Spinalonga', lat: 35.2983, lng: 25.7403, description: 'Isola fortezza con storia affascinante, ex colonia di lebbrosi', images: 'https://www.google.com/search?q=Spinalonga+Island+Crete&tbm=isch', info: 'Storico' }
+      { name: 'Palazzo di Cnosso', lat: 35.2979, lng: 25.1632, description: 'Il piu grande sito archeologico dell\'eta del bronzo a Creta, leggendario palazzo del re Minosse', images: 'https://www.google.com/search?q=Knossos+Palace+Crete&tbm=isch', info: 'Archeologico', monumentType: 'archeologico' },
+      { name: 'Fortezza di Rethymno', lat: 35.3678, lng: 24.4739, description: 'Imponente fortezza veneziana del XVI secolo che domina la citta di Rethymno', images: 'https://www.google.com/search?q=Fortezza+Rethymno+Crete&tbm=isch', info: 'Storico', monumentType: 'storico' },
+      { name: 'Monastero di Arkadi', lat: 35.3097, lng: 24.6297, description: 'Monastero storico simbolo della resistenza cretese contro gli ottomani', images: 'https://www.google.com/search?q=Arkadi+Monastery+Crete&tbm=isch', info: 'Religioso', monumentType: 'religioso' },
+      { name: 'Palazzo di Festo', lat: 35.0518, lng: 24.8145, description: 'Secondo sito minoico piu importante dopo Cnosso, con vista sulla pianura di Messara', images: 'https://www.google.com/search?q=Phaistos+Palace+Crete&tbm=isch', info: 'Archeologico', monumentType: 'archeologico' },
+      { name: 'Gola di Samaria', lat: 35.2620, lng: 23.9620, description: 'La gola piu lunga d\'Europa, parco nazionale con paesaggi mozzafiato', images: 'https://www.google.com/search?q=Samaria+Gorge+Crete&tbm=isch', info: 'Naturale', monumentType: 'naturale' },
+      { name: 'Spinalonga', lat: 35.2983, lng: 25.7403, description: 'Isola fortezza con storia affascinante, ex colonia di lebbrosi', images: 'https://www.google.com/search?q=Spinalonga+Island+Crete&tbm=isch', info: 'Storico', monumentType: 'storico' }
     ];
 
-    const home = { 
-      name: 'Casa a Hersonissos', 
-      lat: 35.3167, 
-      lng: 25.3953,
-      address: 'Hersonissos, Creta, Grecia'
-    };
-    
+    const home = { name: 'Casa a Hersonissos', lat: 35.3167, lng: 25.3953, address: 'Hersonissos, Creta, Grecia' };
     const airports = [
       { name: 'Aeroporto Heraklion', lat: 35.3397, lng: 25.1803 },
       { name: 'Aeroporto Chania', lat: 35.5317, lng: 24.1497 }
@@ -207,19 +220,45 @@
 
     let markers = [];
     let activeMarker = null;
+    let currentPoint = null;
 
-    // Create markers
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+
+    function formatDistance(km) {
+      const minutes = Math.round(km / 0.8);
+      return `${km.toFixed(1)} km (~${minutes} min in auto)`;
+    }
+
+    async function fetchWeather(lat, lng) {
+      try {
+        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`);
+        const data = await response.json();
+        return data.current_weather;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function getWeatherIcon(weatherCode) {
+      if (weatherCode <= 3) return '☀️';
+      if (weatherCode <= 67) return '⛈️';
+      if (weatherCode <= 77) return '❄️';
+      return '☁️';
+    }
+
     function createMarkers() {
-      // Clear existing markers
       markers.forEach(m => m.remove());
       markers = [];
 
-      // Add beaches
       beaches.forEach(beach => {
-        const icon = L.divIcon({
-          className: 'custom-marker beach',
-          iconSize: [18, 18]
-        });
+        const icon = L.divIcon({ className: 'custom-marker beach', iconSize: [18, 18] });
         const marker = L.marker([beach.lat, beach.lng], { icon })
           .addTo(map)
           .on('click', () => showPointInfo(beach, marker, 'beach'));
@@ -227,12 +266,8 @@
         markers.push(marker);
       });
 
-      // Add monuments
       monuments.forEach(monument => {
-        const icon = L.divIcon({
-          className: 'custom-marker monument',
-          iconSize: [18, 18]
-        });
+        const icon = L.divIcon({ className: 'custom-marker monument', iconSize: [18, 18] });
         const marker = L.marker([monument.lat, monument.lng], { icon })
           .addTo(map)
           .on('click', () => showPointInfo(monument, marker, 'monument'));
@@ -241,39 +276,24 @@
         markers.push(marker);
       });
 
-      // Add home with custom popup
-      const homeIcon = L.divIcon({
-        className: 'custom-marker home',
-        iconSize: [20, 20]
-      });
-      L.marker([home.lat, home.lng], { icon: homeIcon })
-        .addTo(map)
-        .bindPopup(`<strong>${home.name}</strong><br>${home.address}`);
+      const homeIcon = L.divIcon({ className: 'custom-marker home', iconSize: [20, 20] });
+      L.marker([home.lat, home.lng], { icon: homeIcon }).addTo(map).bindPopup(`<strong>${home.name}</strong><br>${home.address}`);
 
-      // Add airports
       airports.forEach(airport => {
-        const icon = L.divIcon({
-          className: 'custom-marker airport',
-          iconSize: [18, 18]
-        });
-        L.marker([airport.lat, airport.lng], { icon })
-          .addTo(map)
-          .bindPopup(airport.name);
+        const icon = L.divIcon({ className: 'custom-marker airport', iconSize: [18, 18] });
+        L.marker([airport.lat, airport.lng], { icon }).addTo(map).bindPopup(airport.name);
       });
     }
 
-    function showPointInfo(point, marker, pointType) {
+    async function showPointInfo(point, marker, pointType) {
+      currentPoint = point;
       const overlay = document.getElementById('beachOverlay');
       const eyebrow = overlay.querySelector('.eyebrow');
       
-      // Update eyebrow
       eyebrow.textContent = pointType === 'beach' ? 'Spiaggia' : 'Monumento';
-      
-      // Update content
       overlay.querySelector('h3').textContent = point.name;
       overlay.querySelector('p').textContent = point.description;
       
-      // Update chips
       if (pointType === 'beach') {
         overlay.querySelectorAll('.chip')[0].innerHTML = `<span class="chip-label">Rating:</span> ${point.rating}/5`;
         overlay.querySelectorAll('.chip')[1].innerHTML = `<span class="chip-label">Costa:</span> ${point.coast}`;
@@ -281,70 +301,71 @@
         overlay.querySelectorAll('.chip')[0].innerHTML = `<span class="chip-label">Tipo:</span> ${point.info}`;
         overlay.querySelectorAll('.chip')[1].innerHTML = `<span class="chip-label">Categoria:</span> Monumento`;
       }
+
+      const distanceChip = document.getElementById('distanceChip');
+      const distance = calculateDistance(home.lat, home.lng, point.lat, point.lng);
+      distanceChip.innerHTML = `<span class="chip-label">Distanza da casa:</span> ${formatDistance(distance)}`;
+      distanceChip.style.display = 'block';
+
+      const weatherInfo = document.getElementById('weatherInfo');
+      weatherInfo.style.display = 'flex';
+      const weather = await fetchWeather(point.lat, point.lng);
+      if (weather) {
+        const icon = getWeatherIcon(weather.weathercode);
+        weatherInfo.querySelector('.weather-icon').textContent = icon;
+        weatherInfo.querySelector('.weather-text').textContent = `${weather.temperature}°C, vento ${weather.windspeed} km/h`;
+      } else {
+        weatherInfo.style.display = 'none';
+      }
+
+      document.getElementById('viewImagesBtn').href = point.images;
       
-      // Update image button
-      const imagesBtn = document.getElementById('viewImagesBtn');
-      imagesBtn.href = point.images;
-      
-      // Update directions button with user's current location
-      const directionsBtn = document.getElementById('directionsBtn');
-      directionsBtn.onclick = (e) => {
+      document.getElementById('directionsBtn').onclick = (e) => {
         e.preventDefault();
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
-            (position) => {
-              const userLat = position.coords.latitude;
-              const userLng = position.coords.longitude;
-              window.open(`https://www.google.com/maps/dir/${userLat},${userLng}/${point.lat},${point.lng}`, '_blank');
-            },
-            () => {
-              // Fallback to home location if geolocation fails
-              window.open(`https://www.google.com/maps/dir/${home.lat},${home.lng}/${point.lat},${point.lng}`, '_blank');
-            }
+            (position) => window.open(`https://www.google.com/maps/dir/${position.coords.latitude},${position.coords.longitude}/${point.lat},${point.lng}`, '_blank'),
+            () => window.open(`https://www.google.com/maps/dir/${home.lat},${home.lng}/${point.lat},${point.lng}`, '_blank')
           );
         } else {
-          // Fallback if geolocation is not supported
           window.open(`https://www.google.com/maps/dir/${home.lat},${home.lng}/${point.lat},${point.lng}`, '_blank');
         }
       };
+
+      document.getElementById('shareBtn').onclick = () => {
+        const text = `Guarda ${point.name} su Google Maps!`;
+        const url = `https://www.google.com/maps?q=${point.lat},${point.lng}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+      };
       
       overlay.classList.add('active');
-
-      if (activeMarker) {
-        activeMarker.getElement().classList.remove('is-active');
-      }
+      if (activeMarker) activeMarker.getElement().classList.remove('is-active');
       marker.getElement().classList.add('is-active');
       activeMarker = marker;
     }
 
-    // Filters
     let currentZone = 'all';
     let currentType = 'all';
+    let currentMonumentType = 'all';
 
     function applyFilters() {
       markers.forEach(marker => {
         if (!marker.data) return;
         
-        // Monuments are always shown (no zone/type filter)
         if (marker.type === 'monument') {
-          marker.addTo(map);
+          const monument = marker.data;
+          const monumentMatch = currentMonumentType === 'all' || monument.monumentType === currentMonumentType;
+          monumentMatch ? marker.addTo(map) : marker.remove();
           return;
         }
         
-        // Filter beaches
         const beach = marker.data;
         const zoneMatch = currentZone === 'all' || beach.zone === currentZone;
         const typeMatch = currentType === 'all' || beach.type === currentType;
-        
-        if (zoneMatch && typeMatch) {
-          marker.addTo(map);
-        } else {
-          marker.remove();
-        }
+        (zoneMatch && typeMatch) ? marker.addTo(map) : marker.remove();
       });
     }
 
-    // Zone filters
     document.querySelectorAll('#zoneFilters .filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('#zoneFilters .filter-btn').forEach(b => b.classList.remove('active'));
@@ -354,7 +375,6 @@
       });
     });
 
-    // Type filters
     document.querySelectorAll('#typeToggle button').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('#typeToggle button').forEach(b => b.classList.remove('active'));
@@ -364,15 +384,21 @@
       });
     });
 
-    // Theme toggle
+    document.querySelectorAll('#monumentToggle button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#monumentToggle button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentMonumentType = btn.dataset.monument;
+        applyFilters();
+      });
+    });
+
     document.querySelector('[data-theme-toggle]').addEventListener('click', () => {
       const html = document.documentElement;
       const currentTheme = html.getAttribute('data-theme') || 'light';
-      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-      html.setAttribute('data-theme', newTheme);
+      html.setAttribute('data-theme', currentTheme === 'light' ? 'dark' : 'light');
     });
 
-    // Initialize
     createMarkers();
   </script>
 </body>
